@@ -6,7 +6,7 @@ use crate::Map;
 //
 // while glam has nice performance benefits, the amount of expensive operations
 // on the position vector will be very limited, so this should be fine..
-#[derive(Debug, Default, PartialEq, Clone)]
+#[derive(Debug, Default, PartialEq, Clone, Copy, Eq, Hash)]
 pub struct Position {
     pub x: usize,
     pub y: usize,

@@ -1,6 +1,9 @@
 use crate::CuteWalker;
 use crate::Position;
 use ndarray::Array2;
+use rand::thread_rng;
+use rand::Rng;
+use std::collections::{HashSet, VecDeque};
 
 #[derive(Debug, Clone, Copy)]
 pub enum BlockType {
@@ -74,6 +77,58 @@ impl Map {
 
     fn is_pos_in_bounds(&self, pos: Position) -> bool {
         // we dont have to check for lower bound, because of usize
-        pos.x < self.width && pos.y < self.height
+        pos.x < (self.width / 50) && pos.y < (self.height / 50)
+    }
+    pub fn generate_eulerian_path(&self) -> Vec<Position> {
+        let mut path = Vec::new();
+        let mut visited = HashSet::new();
+        let mut stack = VecDeque::new();
+
+        // Start from the top-left corner
+        let start_position = Position::new(0, 0);
+        stack.push_back(start_position);
+
+        while let Some(current_position) = stack.pop_back() {
+            if !visited.contains(&current_position) {
+                visited.insert(current_position);
+                path.push(current_position);
+
+                // Iterate through the neighbors of the current position
+                for &offset in &[(0, -1), (-1, 0), (0, 1), (1, 0)] {
+                    let neighbor_x = current_position.x as isize + offset.0;
+                    let neighbor_y = current_position.y as isize + offset.1;
+
+                    // Ensure the neighbor is within bounds
+                    if neighbor_x >= 0
+                        && neighbor_x < (self.width / 50) as isize
+                        && neighbor_y >= 0
+                        && neighbor_y < (self.height / 50) as isize
+                    {
+                        let neighbor_position =
+                            Position::new(neighbor_x as usize, neighbor_y as usize);
+
+                        if !visited.contains(&neighbor_position) {
+                            stack
+                                .push_back(Position::new(neighbor_position.x, neighbor_position.y));
+                        }
+                    }
+                }
+            }
+        }
+
+        for i in 0..path.len() {
+            path[i].x *= 50;
+            path[i].y *= 50;
+            path[i].x += 25;
+            path[i].y += 25;
+        }
+        let mut rng = thread_rng();
+        for i in 0..path.len() {
+            path[i].x += rng.gen_range(0..=20);
+            path[i].y += rng.gen_range(0..=20);
+            path[i].x -= rng.gen_range(0..=20);
+            path[i].y -= rng.gen_range(0..=20);
+        }
+        path
     }
 }

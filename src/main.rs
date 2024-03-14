@@ -21,7 +21,7 @@ use macroquad::{color::*, miniquad, window::*};
 use miniquad::conf::{Conf, Platform};
 
 const DISABLE_VSYNC: bool = true;
-const STEPS_PER_FRAME: usize = 50;
+const STEPS_PER_FRAME: usize = 200;
 
 fn window_conf() -> Conf {
     Conf {
@@ -43,19 +43,20 @@ async fn main() {
 
     let mut editor = Editor::new(EditorPlayback::Paused);
 
-    let mut map = Map::new(300, 300, BlockType::Hookable);
+    let mut map = Map::new(1000, 1000, BlockType::Hookable);
+    let waypoints = map.generate_eulerian_path();
     let kernel_table = ValidKernelTable::new(15);
-    let config = GenerationConfig::new(5, 0.1);
-    let waypoints: Vec<Position> = vec![
+    let config = GenerationConfig::new(1, 0.2);
+/*     let waypoints: Vec<Position> = vec![
         Position::new(250, 50),
         Position::new(250, 250),
         Position::new(50, 250),
         Position::new(50, 50),
     ];
-
+ */
     // yeah this is utterly stupid
     let init_inner_kernel = Kernel::new(
-        3,
+        7,
         *kernel_table
             .valid_radii_per_size
             .get(&3)
@@ -64,7 +65,7 @@ async fn main() {
             .unwrap(),
     );
     let init_outer_kernel = Kernel::new(
-        5,
+        11,
         *kernel_table
             .valid_radii_per_size
             .get(&5)
@@ -74,7 +75,7 @@ async fn main() {
     );
 
     let mut walker = CuteWalker::new(
-        Position::new(50, 50),
+        waypoints[0],
         waypoints,
         init_inner_kernel,
         init_outer_kernel,
